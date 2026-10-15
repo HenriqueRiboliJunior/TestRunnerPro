@@ -28,16 +28,24 @@ class RobotRunner:
         """
         project_dir = Path(project_path)
 
+        is_windows = sys.platform == "win32"
+        bin_dirs = ("Scripts", "bin") if is_windows else ("bin",)
+        robot_names = ("robot.exe", "robot.bat", "robot") if is_windows else ("robot",)
+
         # 1. Check project venv
         for venv_name in ("venv", ".venv"):
-            robot_bin = project_dir / venv_name / "bin" / "robot"
-            if robot_bin.exists():
-                return [str(robot_bin)]
+            for b_dir in bin_dirs:
+                for r_name in robot_names:
+                    robot_bin = project_dir / venv_name / b_dir / r_name
+                    if robot_bin.exists():
+                        return [str(robot_bin)]
 
         # 2. Check user's home venv
-        home_venv_robot = Path.home() / "venv" / "bin" / "robot"
-        if home_venv_robot.exists():
-            return [str(home_venv_robot)]
+        for b_dir in bin_dirs:
+            for r_name in robot_names:
+                home_venv_robot = Path.home() / "venv" / b_dir / r_name
+                if home_venv_robot.exists():
+                    return [str(home_venv_robot)]
 
         # 3. Check system PATH
         robot_path = shutil.which("robot")

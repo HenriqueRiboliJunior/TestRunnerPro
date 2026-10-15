@@ -3,6 +3,8 @@
 import asyncio
 import os
 import re
+import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -97,12 +99,22 @@ class PlaywrightRunner:
         output_path.mkdir(parents=True, exist_ok=True)
 
         # Detect local playwright binary in node_modules, fall back to npx
-        local_pw = Path(project_path) / "node_modules" / ".bin" / "playwright"
-        if local_pw.exists():
+        is_windows = sys.platform == "win32"
+        bin_dir = Path(project_path) / "node_modules" / ".bin"
+        local_pw = None
+        candidates = ("playwright.cmd", "playwright.ps1", "playwright") if is_windows else ("playwright",)
+        for c in candidates:
+            p = bin_dir / c
+            if p.exists():
+                local_pw = p
+                break
+
+        if local_pw:
             cmd: list[str] = [str(local_pw), "test", "--reporter=list"]
         else:
             # Use npx --yes to auto-install without interactive prompt
-            cmd = ["npx", "--yes", "playwright", "test", "--reporter=list"]
+            npx_cmd = shutil.which("npx") or ("npx.cmd" if is_windows else "npx")
+            cmd = [npx_cmd, "--yes", "playwright", "test", "--reporter=list"]
 
         # IMPORTANT: Test file filters must come right after 'test' command,
         # before --project and other flags, otherwise Playwright interprets

@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import signal
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -32,6 +33,12 @@ class AppProcess:
         """Start the process."""
         try:
             env = os.environ.copy()
+            kwargs = {}
+            if sys.platform != "win32":
+                kwargs["preexec_fn"] = os.setsid  # Process group on POSIX
+            else:
+                kwargs["creationflags"] = getattr(signal, "CTRL_BREAK_EVENT", 0x00000200)
+
             self.process = await asyncio.create_subprocess_shell(
                 self.command,
                 cwd=self.cwd,
@@ -39,7 +46,7 @@ class AppProcess:
                 stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
-                preexec_fn=os.setsid,  # Create process group for clean kill
+                **kwargs,
             )
             self.pid = self.process.pid
             self.status = "running"
@@ -94,12 +101,19 @@ class AppProcess:
 
         if self.process and self.process.returncode is None:
             try:
-                # Kill the entire process group
-                os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-                try:
-                    await asyncio.wait_for(self.process.wait(), timeout=10)
-                except asyncio.TimeoutError:
-                    os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
+                if sys.platform == "win32":
+                    self.process.terminate()
+                    try:
+                        await asyncio.wait_for(self.process.wait(), timeout=5)
+                    except asyncio.TimeoutError:
+                        self.process.kill()
+                else:
+                    # Kill the entire process group on POSIX
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+                    try:
+                        await asyncio.wait_for(self.process.wait(), timeout=10)
+                    except asyncio.TimeoutError:
+                        os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
             except ProcessLookupError:
                 pass
             except Exception as e:
