@@ -35,6 +35,16 @@ PLAYWRIGHT_SUFFIXES = (
     ".test.cjs",
 )
 
+# Cypress test file suffixes
+CYPRESS_SUFFIXES = (
+    ".cy.js",
+    ".cy.ts",
+    ".cy.jsx",
+    ".cy.tsx",
+    ".spec.js",
+    ".spec.ts",
+)
+
 
 def _matches_pattern(filename: str, test_type: str) -> bool:
     """Check if filename matches test file pattern for the given test type."""
@@ -46,6 +56,18 @@ def _matches_pattern(filename: str, test_type: str) -> bool:
 
     if type_normalized == "playwright":
         return any(lower_filename.endswith(suffix) for suffix in PLAYWRIGHT_SUFFIXES)
+
+    if type_normalized == "cypress":
+        return any(lower_filename.endswith(suffix) for suffix in CYPRESS_SUFFIXES)
+
+    if type_normalized == "pytest":
+        return (lower_filename.startswith("test_") and lower_filename.endswith(".py")) or lower_filename.endswith("_test.py")
+
+    if type_normalized in ("newman", "postman"):
+        return lower_filename.endswith(".json") and ("collection" in lower_filename or "postman" in lower_filename)
+
+    if type_normalized == "k6":
+        return lower_filename.endswith(".js") or lower_filename.endswith(".ts")
 
     return False
 

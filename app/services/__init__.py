@@ -1,7 +1,11 @@
 """Service layer package for TestRunner Pro."""
 
+from app.services.cypress_runner import CypressRunner
 from app.services.discovery import discover_tests
+from app.services.k6_runner import K6Runner
+from app.services.newman_runner import NewmanRunner
 from app.services.playwright_runner import PlaywrightRunner
+from app.services.pytest_runner import PytestRunner
 from app.services.robot_runner import RobotRunner
 from app.services.runner import (
     active_runners,

@@ -4,20 +4,24 @@
 
 ### Plataforma Moderna para Orquestração e Execução de Testes Automatizados
 
-**Robot Framework &bull; Playwright &bull; FastAPI &bull; WebSockets &bull; Tailwind CSS**
+**Playwright &bull; Cypress &bull; Robot Framework &bull; Pytest &bull; Postman/Newman &bull; K6**
 
 ---
 
 [![Python Version](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Playwright](https://img.shields.io/badge/Playwright-Supported-45ba4b?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![Cypress](https://img.shields.io/badge/Cypress-Supported-17202C?style=for-the-badge&logo=cypress&logoColor=white)](https://www.cypress.io/)
 [![Robot Framework](https://img.shields.io/badge/Robot%20Framework-Supported-000000?style=for-the-badge&logo=robotframework&logoColor=white)](https://robotframework.org/)
+[![Pytest](https://img.shields.io/badge/Pytest-Supported-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![Postman](https://img.shields.io/badge/Postman%2FNewman-Supported-FF6C37?style=for-the-badge&logo=postman&logoColor=white)](https://www.postman.com/)
+[![k6](https://img.shields.io/badge/K6%20Load%20Testing-Supported-7D64FF?style=for-the-badge&logo=k6&logoColor=white)](https://k6.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Dark_Mode-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 <br/>
 
-O **TestRunner Pro** é uma aplicação completa (backend assíncrono + frontend SPA) para gerenciar, orquestrar, executar e monitorar suítes de testes automatizados **Playwright** e **Robot Framework** em tempo real através do navegador.
+O **TestRunner Pro** é uma plataforma completa (backend assíncrono + frontend SPA) para gerenciar, orquestrar, executar e monitorar suítes de testes automatizados em tempo real através do navegador, com suporte nativo às principais ferramentas de teste do mercado: **Playwright, Cypress, Robot Framework, Pytest, Postman (Newman) e K6**.
 
 </div>
 
@@ -26,6 +30,7 @@ O **TestRunner Pro** é uma aplicação completa (backend assíncrono + frontend
 ## 📌 Índice
 
 - [Visão Geral](#-visão-geral)
+- [Frameworks Suportados](#-frameworks-suportados)
 - [Principais Funcionalidades](#-principais-funcionalidades)
 - [Arquitetura do Projeto](#-arquitetura-do-projeto)
 - [Pré-requisitos](#-pré-requisitos)
@@ -45,12 +50,25 @@ O **TestRunner Pro** é uma aplicação completa (backend assíncrono + frontend
 
 ## 🚀 Visão Geral
 
-O **TestRunner Pro** foi desenvolvido para centralizar a automação de testes de times de QA e Engenharia de Software. Em vez de depender apenas de linhas de comando isoladas ou servidores de CI/CD para rodar testes locais, o TestRunner Pro disponibiliza:
+O **TestRunner Pro** foi desenvolvido para centralizar a automação de testes de times de QA e Engenharia de Software. Em vez de depender de linhas de comando isoladas ou ferramentas fragmentadas, o TestRunner Pro disponibiliza:
 
-- **Interface Unificada:** Controle suítes de Robot Framework (Python) e Playwright (Node/TS/JS) em um único painel.
+- **Interface Unificada:** Controle suítes de ponta a ponta (Web, API, Performance e Unitários) em um único painel web moderno.
 - **Transmissão em Tempo Real:** Acompanhe a saída do terminal linha por linha via **WebSockets**, com auto-scroll e controle de cancelamento em tempo de execução.
 - **Gerenciamento do Ambiente sob Teste:** Inicie dependências pré-teste (ex: Docker Compose, APIs e Frontend de desenvolvimento) e desligue-os automaticamente após a execução dos testes.
 - **Agendador Integrado:** Programe rotinas de testes contínuas diretamente pela interface web usando expressões Cron padrão.
+
+---
+
+## 🧰 Frameworks Suportados
+
+| Framework | Tipo de Teste | Extensões Detectadas | Comando Base |
+| :--- | :--- | :--- | :--- |
+| **Playwright** | E2E Web & Componentes | `.spec.ts`, `.spec.js`, `.test.ts`, `.test.js` | `playwright test` |
+| **Cypress** | E2E Web | `.cy.js`, `.cy.ts`, `.cy.jsx`, `.cy.tsx` | `cypress run` |
+| **Robot Framework** | Acceptance & E2E (Python) | `.robot` | `robot` |
+| **Pytest** | Unitário, Integração & API (Python) | `test_*.py`, `*_test.py` | `pytest` |
+| **Postman / Newman** | Testes de API Rest | `*.postman_collection.json`, `*collection*.json` | `newman run` |
+| **K6** | Performance & Carga | `*.js`, `*.ts` | `k6 run` |
 
 ---
 

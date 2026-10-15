@@ -13,7 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.models import Execution, Project
 from app.services.app_manager import app_manager
+from app.services.cypress_runner import CypressRunner
+from app.services.k6_runner import K6Runner
+from app.services.newman_runner import NewmanRunner
 from app.services.playwright_runner import PlaywrightRunner
+from app.services.pytest_runner import PytestRunner
 from app.services.robot_runner import RobotRunner
 
 logger = logging.getLogger(__name__)
@@ -145,6 +149,14 @@ async def start_execution(execution_id: int, db_session_factory: Callable[[], An
     # Initialize appropriate runner
     if test_type == "robot":
         runner: Any = RobotRunner()
+    elif test_type == "cypress":
+        runner = CypressRunner()
+    elif test_type == "pytest":
+        runner = PytestRunner()
+    elif test_type in ("newman", "postman"):
+        runner = NewmanRunner()
+    elif test_type == "k6":
+        runner = K6Runner()
     else:
         runner = PlaywrightRunner()
 

@@ -73,8 +73,12 @@ const Projects = {
                         class="bg-gray-900 border border-gray-800 rounded-lg text-xs sm:text-sm text-gray-200 px-3 py-2 focus:outline-none focus:border-indigo-500 transition"
                         onchange="Projects.filterType = this.value; Projects.render();">
                         <option value="all" ${this.filterType === 'all' ? 'selected' : ''}>Todos os Tipos</option>
-                        <option value="robot" ${this.filterType === 'robot' ? 'selected' : ''}>Robot Framework</option>
                         <option value="playwright" ${this.filterType === 'playwright' ? 'selected' : ''}>Playwright</option>
+                        <option value="cypress" ${this.filterType === 'cypress' ? 'selected' : ''}>Cypress</option>
+                        <option value="robot" ${this.filterType === 'robot' ? 'selected' : ''}>Robot Framework</option>
+                        <option value="pytest" ${this.filterType === 'pytest' ? 'selected' : ''}>Pytest</option>
+                        <option value="newman" ${this.filterType === 'newman' ? 'selected' : ''}>Postman / Newman</option>
+                        <option value="k6" ${this.filterType === 'k6' ? 'selected' : ''}>K6 Performance</option>
                     </select>
                 </div>
 
@@ -130,7 +134,17 @@ const Projects = {
      * @param {object} project 
      */
     renderProjectCard(project) {
-        const isRobot = (project.test_type || '').toLowerCase() === 'robot';
+        const frameworkMeta = {
+            playwright: { name: 'Playwright', icon: 'play-circle', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+            cypress: { name: 'Cypress', icon: 'check-circle-2', cls: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
+            robot: { name: 'Robot Framework', icon: 'bot', cls: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+            pytest: { name: 'Pytest', icon: 'terminal', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+            newman: { name: 'Postman / Newman', icon: 'send', cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
+            postman: { name: 'Postman / Newman', icon: 'send', cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
+            k6: { name: 'K6 Performance', icon: 'zap', cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+        };
+        const typeKey = (project.test_type || 'playwright').toLowerCase();
+        const meta = frameworkMeta[typeKey] || { name: project.test_type || 'Custom', icon: 'code-2', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
         const browser = project.browser || 'chromium';
         const envCount = project.env_vars ? Object.keys(project.env_vars).length : 0;
         const appCommands = Array.isArray(project.app_commands) ? project.app_commands : [];
@@ -147,12 +161,9 @@ const Projects = {
                                 ${App.escapeHtml(project.name)}
                             </h3>
                             <div class="flex items-center flex-wrap gap-2 mt-1">
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold ${
-                                    isRobot ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
-                                            : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                }">
-                                    <i data-lucide="${isRobot ? 'bot' : 'code-2'}" class="w-3 h-3"></i>
-                                    ${isRobot ? 'Robot Framework' : 'Playwright'}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold ${meta.cls}">
+                                    <i data-lucide="${meta.icon}" class="w-3 h-3"></i>
+                                    ${meta.name}
                                 </span>
                                 <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-gray-800 text-gray-300 border border-gray-700/60 uppercase">
                                     ${App.escapeHtml(browser)}
@@ -290,8 +301,12 @@ const Projects = {
                         </label>
                         <select id="project-form-type" required
                             class="w-full px-3.5 py-2.5 bg-gray-950 border border-gray-800 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500 transition">
+                            <option value="playwright" ${testType === 'playwright' ? 'selected' : ''}>Playwright (.spec.js, .spec.ts, .test.ts)</option>
+                            <option value="cypress" ${testType === 'cypress' ? 'selected' : ''}>Cypress (.cy.js, .cy.ts)</option>
                             <option value="robot" ${testType === 'robot' ? 'selected' : ''}>Robot Framework (.robot)</option>
-                            <option value="playwright" ${testType === 'playwright' ? 'selected' : ''}>Playwright (.spec.js, .py)</option>
+                            <option value="pytest" ${testType === 'pytest' ? 'selected' : ''}>Pytest (test_*.py, *_test.py)</option>
+                            <option value="newman" ${testType === 'newman' ? 'selected' : ''}>Postman / Newman (*.json collections)</option>
+                            <option value="k6" ${testType === 'k6' ? 'selected' : ''}>K6 Performance (*.js, *.ts load scripts)</option>
                         </select>
                     </div>
 
