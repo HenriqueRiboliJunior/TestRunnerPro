@@ -1,5 +1,6 @@
 """Projects API router."""
 
+import asyncio
 import inspect
 import logging
 from datetime import datetime
@@ -207,15 +208,43 @@ async def get_project_tests(
 
 
 @router.post("/{project_id}/app/start")
-async def start_project_app(project_id: int, db: AsyncSession = Depends(get_db)):
-    """Start the application for a project."""
+async def start_project_app(
+    project_id: int,
+    force: bool = False,
+    db: AsyncSession = Depends(get_db),
+):
+    """Start the application for a project, with optional port conflict detection."""
     project = await db.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
     if not project.app_commands:
         raise HTTPException(status_code=400, detail="Nenhum comando de inicialização configurado")
 
-    result = await app_manager.start_app(project_id, project.app_commands)
+    # Check for running application in another project (potential port conflict)
+    conflict = app_manager.check_conflicts(project_id)
+    if conflict and not force:
+        other_project = await db.get(Project, conflict["conflict_project_id"])
+        other_name = other_project.name if other_project else f"Projeto #{conflict['conflict_project_id']}"
+        return {
+            "conflict": True,
+            "conflict_project_id": conflict["conflict_project_id"],
+            "conflict_project_name": other_name,
+            "message": f"A aplicação do projeto '{other_name}' já está em execução (possível conflito na mesma porta, ex: :3000). Deseja desligá-la para iniciar esta?",
+            "status": "conflict",
+        }
+
+    # If force is true, stop the conflicting application first
+    if conflict and force:
+        logger.info(
+            "Stopping conflicting project app %s to start project %s",
+            conflict["conflict_project_id"],
+            project_id,
+        )
+        await app_manager.stop_app(conflict["conflict_project_id"])
+        await asyncio.sleep(1)
+
+    result = await app_manager.start_app(project_id, project.app_commands, started_by="manual")
+    result["conflict"] = False
     return result
 
 

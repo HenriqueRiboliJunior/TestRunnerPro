@@ -145,6 +145,11 @@ class PytestRunner:
         env = os.environ.copy()
         if not headless:
             env["HEADED"] = "1"
+            if not sys.platform.startswith("win"):
+                if "DISPLAY" not in env:
+                    env["DISPLAY"] = os.environ.get("DISPLAY", ":0")
+                if "XAUTHORITY" not in env and os.environ.get("XAUTHORITY"):
+                    env["XAUTHORITY"] = os.environ.get("XAUTHORITY")
         if debug:
             cmd.append("-s")  # Don't capture stdout in debug
         if env_vars:

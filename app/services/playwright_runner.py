@@ -140,12 +140,18 @@ class PlaywrightRunner:
         # Environment setup
         env = os.environ.copy()
 
-        # If headless is False: set HEADED=1 in env (do not pass --headed flag)
+        # Handle headless / headed mode
         if not headless:
+            cmd.append("--headed")
+            env.pop("CI", None)
             env["HEADED"] = "1"
+            if not is_windows:
+                if "DISPLAY" not in env:
+                    env["DISPLAY"] = os.environ.get("DISPLAY", ":0")
+                if "XAUTHORITY" not in env and os.environ.get("XAUTHORITY"):
+                    env["XAUTHORITY"] = os.environ.get("XAUTHORITY")
         else:
-            # CI=1 forces headless and prevents interactive prompts
-            # Only set when actually running headless (CI=1 overrides HEADED=1)
+            cmd.append("--headless")
             env["CI"] = "1"
 
         if debug:

@@ -183,10 +183,21 @@ async def start_execution(execution_id: int, db_session_factory: Callable[[], An
     # Auto-start application if configured
     auto_started_app = False
     if project_auto_start_app and project_app_commands:
-        if not app_manager.is_online(project_id):
+        existing_app = app_manager.apps.get(project_id)
+        if existing_app and app_manager.is_online(project_id):
+            auto_started_app = False
+            await on_output("ℹ️ Aplicação já está online (iniciada previamente pelo usuário). Mantendo ativa durante os testes...")
+        else:
+            # Check for conflict with other projects and stop them
+            conflict = app_manager.check_conflicts(project_id)
+            if conflict:
+                await on_output(f"⚠️ Detectada outra aplicação em execução (Projeto #{conflict['conflict_project_id']}). Desligando para liberar portas...")
+                await app_manager.stop_app(conflict["conflict_project_id"])
+                await asyncio.sleep(1)
+
             auto_started_app = True
-            await on_output("🚀 Iniciando aplicação automaticamente...")
-            status_result = await app_manager.start_app(project_id, project_app_commands)
+            await on_output("🚀 Iniciando aplicação automaticamente antes dos testes...")
+            status_result = await app_manager.start_app(project_id, project_app_commands, started_by="auto")
             if status_result["status"] in ("online", "partial"):
                 await on_output("✅ Aplicação online! Iniciando testes...")
             else:
@@ -250,6 +261,18 @@ async def start_execution(execution_id: int, db_session_factory: Callable[[], An
     finally:
         active_runners.pop(execution_id, None)
 
+    # Auto-stop application ONLY if it was auto-started by the runner (keep alive if manually started)
+    app_rec = app_manager.apps.get(project_id)
+    if auto_started_app and app_rec and getattr(app_rec, "started_by", None) == "auto":
+        await on_output("🔄 Desligando aplicação (iniciada automaticamente para os testes)...")
+        await app_manager.stop_app(project_id)
+        await on_output("⏹️ Aplicação desligada automaticamente.")
+    elif app_rec and getattr(app_rec, "started_by", None) == "manual":
+        await on_output("ℹ️ Aplicação foi iniciada manualmente pelo usuário e permanecerá em execução.")
+
+    # Re-assemble final log so shutdown messages are included
+    final_log = "\n".join(log_lines) if log_lines else final_log
+
     # Persist final execution record
     try:
         async with db_session_factory() as final_session:
@@ -270,9 +293,3 @@ async def start_execution(execution_id: int, db_session_factory: Callable[[], An
 
     # Broadcast completion event
     await broadcast_to_ws(execution_id, f"__COMPLETED__:{status}")
-
-    # Auto-stop application if it was auto-started (not manually started)
-    if auto_started_app and app_manager.is_online(project_id):
-        await broadcast_to_ws(execution_id, "🔄 Desligando aplicação (auto-start)...")
-        await app_manager.stop_app(project_id)
-        await broadcast_to_ws(execution_id, "⏹️ Aplicação desligada automaticamente.")

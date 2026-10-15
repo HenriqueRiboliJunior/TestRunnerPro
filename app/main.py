@@ -150,6 +150,16 @@ async def app_ws(websocket: WebSocket, project_id: int):
     if project_id not in app_ws_connections:
         app_ws_connections[project_id] = []
     app_ws_connections[project_id].append(websocket)
+
+    # Stream existing logs immediately to the client
+    existing_logs = app_manager.get_logs(project_id)
+    if existing_logs:
+        for line in existing_logs.splitlines():
+            if line.strip():
+                try:
+                    await websocket.send_text(line)
+                except Exception:
+                    break
     try:
         while True:
             data = await websocket.receive_text()

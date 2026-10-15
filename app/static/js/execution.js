@@ -1184,14 +1184,14 @@ const Execution = {
     /**
      * Start the application processes for current project.
      * Checks for running app port conflicts across projects before starting.
-     * @param {boolean} skipConflictCheck 
+     * @param {boolean} force 
      */
-    async startApp(skipConflictCheck = false) {
+    async startApp(force = false) {
         if (!this.currentProject) return;
         const projectId = this.currentProject.id;
 
-        // Change 1: Port Conflict Detection
-        if (!skipConflictCheck) {
+        // Check for running apps in other projects before sending request
+        if (!force) {
             try {
                 const runningApps = await App.apiCall('/api/projects/apps/running', 'GET', null, true);
                 const conflicting = (Array.isArray(runningApps) ? runningApps : []).filter(
@@ -1201,14 +1201,18 @@ const Execution = {
                 if (conflicting.length > 0) {
                     const runningProjectName = conflicting.map(a => a.project_name || `Projeto #${a.project_id}`).join(', ');
                     App.showModal(
-                        '⚠️ Conflito de Porta',
+                        '⚠️ Conflito de Aplicação / Porta Detectado',
                         `
                             <div class="space-y-3">
                                 <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
                                     <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
                                     <div>
-                                        <p class="text-sm text-gray-200 leading-relaxed">
-                                            A aplicação do projeto "${App.escapeHtml(runningProjectName)}" já está em execução e pode estar usando a mesma porta. Deseja desligá-la antes de iniciar?
+                                        <h4 class="text-xs font-bold text-amber-200">Aplicação em execução detectada</h4>
+                                        <p class="text-sm text-gray-200 mt-1 leading-relaxed">
+                                            A aplicação do projeto <strong>"${App.escapeHtml(runningProjectName)}"</strong> já está em execução (possível conflito na mesma porta, ex: :3000).
+                                        </p>
+                                        <p class="text-xs text-amber-300/90 mt-2 font-medium">
+                                            Deseja desligar a aplicação do projeto "${App.escapeHtml(runningProjectName)}" para poder rodar a deste projeto na mesma porta?
                                         </p>
                                     </div>
                                 </div>
@@ -1221,27 +1225,11 @@ const Execution = {
                                 closeOnClick: true
                             },
                             {
-                                label: 'Iniciar mesmo assim',
-                                class: 'px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm font-medium transition',
-                                closeOnClick: true,
-                                onClick: async () => {
-                                    App.hideModal();
-                                    await this.startApp(true);
-                                }
-                            },
-                            {
                                 label: 'Sim, desligar e iniciar',
-                                class: 'px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold shadow-md shadow-emerald-600/30 transition',
+                                class: 'px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-semibold shadow-md shadow-amber-600/30 transition',
                                 closeOnClick: true,
                                 onClick: async () => {
                                     App.hideModal();
-                                    for (const runningApp of conflicting) {
-                                        try {
-                                            await App.apiCall(`/api/projects/${runningApp.project_id}/app/stop`, 'POST');
-                                        } catch (err) {
-                                            console.warn(`[Execution] Erro ao desligar aplicação #${runningApp.project_id}:`, err);
-                                        }
-                                    }
                                     await this.startApp(true);
                                 }
                             }
@@ -1256,10 +1244,55 @@ const Execution = {
 
         this.isAppActionLoading = true;
         this.updateAppControlUI({ status: 'starting' });
+        this.clearAppTerminal();
         this.appendAppTerminalLine(`[SISTEMA] Solicitando inicialização dos serviços para "${this.currentProject.name}"...`, 'log-info');
 
         try {
-            const res = await App.apiCall(`/api/projects/${projectId}/app/start`, 'POST');
+            const endpoint = force ? `/api/projects/${projectId}/app/start?force=true` : `/api/projects/${projectId}/app/start`;
+            const res = await App.apiCall(endpoint, 'POST');
+
+            if (res && res.conflict) {
+                this.isAppActionLoading = false;
+                await this.fetchAppStatus(projectId, true);
+                const conflictName = res.conflict_project_name || `Projeto #${res.conflict_project_id}`;
+                App.showModal(
+                    '⚠️ Conflito de Aplicação / Porta Detectado',
+                    `
+                        <div class="space-y-3">
+                            <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-xs font-bold text-amber-200">Aplicação em execução detectada</h4>
+                                    <p class="text-sm text-gray-200 mt-1 leading-relaxed">
+                                        A aplicação do projeto <strong>"${App.escapeHtml(conflictName)}"</strong> já está em execução (possível conflito na mesma porta, ex: :3000).
+                                    </p>
+                                    <p class="text-xs text-amber-300/90 mt-2 font-medium">
+                                        Deseja desligar a aplicação do projeto "${App.escapeHtml(conflictName)}" para poder rodar a deste projeto na mesma porta?
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    [
+                        {
+                            label: 'Cancelar',
+                            class: 'px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm font-medium transition',
+                            closeOnClick: true
+                        },
+                        {
+                            label: 'Sim, desligar e iniciar',
+                            class: 'px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-semibold shadow-md shadow-amber-600/30 transition',
+                            closeOnClick: true,
+                            onClick: async () => {
+                                App.hideModal();
+                                await this.startApp(true);
+                            }
+                        }
+                    ]
+                );
+                return;
+            }
+
             this.appState = res;
             this.updateAppControlUI(res);
             App.showToast(res.message || 'Aplicação iniciada com sucesso!', 'success');
@@ -1736,6 +1769,11 @@ const Execution = {
                 App.showToast(`Execução #${executionId} finalizada com sucesso!`, 'success');
             } else if (data.status === 'failed') {
                 App.showToast(`Execução #${executionId} finalizada com falhas.`, 'error');
+            }
+
+            // Immediately refresh app status in UI
+            if (this.currentProject) {
+                await this.fetchAppStatus(this.currentProject.id, true);
             }
         } catch (err) {
             console.warn('[Execution] Error fetching final execution details:', err);

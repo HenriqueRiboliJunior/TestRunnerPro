@@ -159,15 +159,17 @@ class RobotRunner:
 
         if headless:
             cmd.extend([
-                "--variable",
-                "HEADLESS:true",
-                "--variable",
-                f"BROWSER:headless{browser}",
+                "--variable", "HEADLESS:true",
+                "--variable", "HEADLESS:True",
+                "--variable", "headless:true",
+                "--variable", f"BROWSER:headless{browser}",
             ])
         else:
             cmd.extend([
-                "--variable",
-                f"BROWSER:{browser}",
+                "--variable", "HEADLESS:false",
+                "--variable", "HEADLESS:False",
+                "--variable", "headless:false",
+                "--variable", f"BROWSER:{browser}",
             ])
 
         if debug:
@@ -188,9 +190,18 @@ class RobotRunner:
         env = os.environ.copy()
         if headless:
             env["HEADLESS"] = "true"
+            env["ROBOT_HEADLESS"] = "true"
             env["BROWSER"] = f"headless{browser}"
         else:
+            env["HEADLESS"] = "false"
+            env["ROBOT_HEADLESS"] = "false"
+            env["HEADED"] = "true"
             env["BROWSER"] = browser
+            if not sys.platform.startswith("win"):
+                if "DISPLAY" not in env:
+                    env["DISPLAY"] = os.environ.get("DISPLAY", ":0")
+                if "XAUTHORITY" not in env and os.environ.get("XAUTHORITY"):
+                    env["XAUTHORITY"] = os.environ.get("XAUTHORITY")
 
         if env_vars:
             env.update({str(k): str(v) for k, v in env_vars.items()})

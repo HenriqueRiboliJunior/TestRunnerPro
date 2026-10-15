@@ -137,12 +137,14 @@ class ProjectApp:
         self.processes: list[AppProcess] = []
         self.status: str = "offline"  # offline, starting, online, stopping, error, partial
         self.started_at: Optional[datetime] = None
+        self.started_by: str = "manual"  # 'manual' or 'auto'
 
-    async def start(self, commands: list[dict], on_output=None) -> str:
+    async def start(self, commands: list[dict], on_output=None, started_by: str = "manual") -> str:
         """Start all application processes sequentially."""
         self.status = "starting"
         self.processes = []
         self.started_at = datetime.utcnow()
+        self.started_by = started_by
 
         for cmd_config in commands:
             label = cmd_config.get("label", "App")
@@ -260,6 +262,7 @@ class ProjectApp:
                 for p in self.processes
             ],
             "started_at": self.started_at.isoformat() if self.started_at else None,
+            "started_by": getattr(self, "started_by", "manual"),
             "message": "",
         }
 
@@ -284,6 +287,7 @@ class AppManager:
             "status": "offline",
             "processes": [],
             "started_at": None,
+            "started_by": "manual",
             "message": "",
         }
 
@@ -294,7 +298,27 @@ class AppManager:
             return app.status in ("online", "partial")
         return False
 
-    async def start_app(self, project_id: int, commands: list[dict]) -> dict:
+    def is_running(self, project_id: int) -> bool:
+        app = self.apps.get(project_id)
+        if app:
+            app._update_status()
+            return app.status in ("online", "partial", "starting")
+        return False
+
+    def check_conflicts(self, project_id: int) -> Optional[dict]:
+        """Check if another project's application is currently running."""
+        for pid, app in list(self.apps.items()):
+            if pid != project_id:
+                app._update_status()
+                if app.status in ("online", "partial", "starting"):
+                    return {
+                        "conflict_project_id": pid,
+                        "status": app.status,
+                        "started_at": app.started_at.isoformat() if app.started_at else None,
+                    }
+        return None
+
+    async def start_app(self, project_id: int, commands: list[dict], started_by: str = "manual") -> dict:
         """Start application for a project."""
         # If already running, return current status
         if self.is_online(project_id):
@@ -310,7 +334,7 @@ class AppManager:
         async def on_output(line: str):
             await broadcast_app_ws(project_id, line)
 
-        await app.start(commands, on_output)
+        await app.start(commands, on_output, started_by=started_by)
         return app.get_status_dict()
 
     async def stop_app(self, project_id: int) -> dict:

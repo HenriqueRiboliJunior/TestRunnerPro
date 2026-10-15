@@ -112,11 +112,19 @@ class CypressRunner:
             cy_browser = "chrome" if browser.lower() == "chromium" else browser.lower()
             cmd.extend(["--browser", cy_browser])
 
+        env = os.environ.copy()
         # Headless / Headed
         if not headless:
             cmd.append("--headed")
+            env.pop("CI", None)
+            if not is_windows:
+                if "DISPLAY" not in env:
+                    env["DISPLAY"] = os.environ.get("DISPLAY", ":0")
+                if "XAUTHORITY" not in env and os.environ.get("XAUTHORITY"):
+                    env["XAUTHORITY"] = os.environ.get("XAUTHORITY")
         else:
             cmd.append("--headless")
+            env["CI"] = "1"
 
         # Specific tests
         if mode == "specific_tests" and selected_tests:
@@ -128,8 +136,6 @@ class CypressRunner:
         if mode == "by_tag" and tags:
             cmd.extend(["--env", f"grep={tags}"])
 
-        env = os.environ.copy()
-        env["CI"] = "1"
         if env_vars:
             env.update({str(k): str(v) for k, v in env_vars.items()})
 
