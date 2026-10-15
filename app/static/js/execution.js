@@ -76,7 +76,7 @@ const Execution = {
                     </div>
                     <h3 class="text-base font-bold text-gray-200">Nenhum projeto disponível</h3>
                     <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
-                        Para executar testes, você precisa cadastrar pelo menos um projeto Robot Framework ou Playwright.
+                        Para executar testes, você precisa cadastrar pelo menos um projeto de automação.
                     </p>
                     <button onclick="App.navigateTo('projects'); setTimeout(() => Projects.showAddForm(), 100);" 
                         class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg inline-flex items-center gap-2 transition">
@@ -182,7 +182,7 @@ const Execution = {
                             </label>
                             <input type="text" id="exec-tags-input" placeholder="ex: smoke, regressao, not wip" 
                                 class="w-full px-3.5 py-2.5 bg-gray-950 border border-gray-800 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition">
-                            <p class="text-[11px] text-gray-500 mt-1">Robot Framework (-i tag) ou Playwright (--grep tag).</p>
+                            <p class="text-[11px] text-gray-500 mt-1">Filtro por tag/grep (ex: Playwright --grep, Cypress grep, Robot -i, Pytest -k/-m).</p>
                         </div>
 
                         <!-- Browser Selection -->

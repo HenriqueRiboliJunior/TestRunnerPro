@@ -158,7 +158,7 @@ const App = {
 
         const titles = {
             dashboard: { title: 'Dashboard', desc: 'Visão geral das execuções e métricas de qualidade' },
-            projects: { title: 'Projetos', desc: 'Gerencie suas suítes de teste Robot Framework e Playwright' },
+            projects: { title: 'Projetos', desc: 'Gerencie suas suítes de teste (Playwright, Cypress, Robot, Pytest, Newman, K6)' },
             execution: { title: 'Executar Testes', desc: 'Dispare e monitore execuções em tempo real com streaming de logs' },
             history: { title: 'Histórico de Execuções', desc: 'Audite execuções anteriores, relatórios e estatísticas' },
             schedules: { title: 'Agendamentos', desc: 'Configure execuções automáticas com expressões Cron' },
