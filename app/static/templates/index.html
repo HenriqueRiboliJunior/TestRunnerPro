@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestRunner Pro - Automação Robot Framework & Playwright</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#151d2e',
+                            925: '#0c111d',
+                            950: '#030712'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Stylesheet -->
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex overflow-x-hidden antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <!-- ========================================== -->
+    <!-- LEFT SIDEBAR                               -->
+    <!-- ========================================== -->
+    <aside class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen z-30">
+        <div>
+            <!-- Brand / Logo -->
+            <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-600/30 text-white">
+                        <i data-lucide="play-circle" class="w-5 h-5 fill-current"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-100 to-indigo-300 bg-clip-text text-transparent">
+                            TestRunner Pro
+                        </h1>
+                        <p class="text-[10px] text-gray-400 font-medium tracking-wide uppercase">Robot & Playwright</p>
+                    </div>
+                </div>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">v1.0</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1">
+                <p class="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Menu Principal</p>
+                
+                <!-- Dashboard -->
+                <a href="#dashboard" data-nav="dashboard" 
+                    class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- Projetos -->
+                <a href="#projects" data-nav="projects" 
+                    class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                    <i data-lucide="folder-kanban" class="w-4 h-4 shrink-0"></i>
+                    <span>Projetos</span>
+                </a>
+
+                <!-- Executar Testes -->
+                <a href="#execution" data-nav="execution" 
+                    class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                    <i data-lucide="play-circle" class="w-4 h-4 shrink-0"></i>
+                    <span>Executar Testes</span>
+                </a>
+
+                <!-- Histórico -->
+                <a href="#history" data-nav="history" 
+                    class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                    <i data-lucide="history" class="w-4 h-4 shrink-0"></i>
+                    <span>Histórico</span>
+                </a>
+
+                <!-- Agendamentos -->
+                <a href="#schedules" data-nav="schedules" 
+                    class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                    <i data-lucide="calendar-clock" class="w-4 h-4 shrink-0"></i>
+                    <span>Agendamentos</span>
+                </a>
+
+                <p class="px-3 pt-4 pb-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sistema</p>
+
+                <!-- Configurações -->
+                <a href="#settings" data-nav="settings" 
+                    class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                    <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
+                    <span>Configurações</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer Status -->
+        <div class="p-4 border-t border-gray-800">
+            <div class="bg-gray-950/80 border border-gray-800 rounded-xl p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span id="system-status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="system-status-text" class="text-xs font-semibold text-gray-300">API Conectada</span>
+                    </div>
+                    <span class="text-[10px] text-gray-500 font-mono">Port 8000</span>
+                </div>
+                <div class="text-[11px] text-gray-400">
+                    Executor local pronto para rodar suítes Robot e Playwright.
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT AREA                          -->
+    <!-- ========================================== -->
+    <div class="flex-1 flex flex-col min-w-0">
+        
+        <!-- Header Bar -->
+        <header class="h-16 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-20 px-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div>
+                    <h2 id="header-page-title" class="text-base font-bold text-gray-100">Dashboard</h2>
+                    <p id="header-page-subtitle" class="text-xs text-gray-400 hidden sm:block">Visão geral das execuções e métricas de qualidade</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Status Pill in Header -->
+                <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-950 border border-gray-800 text-xs text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>Ambiente Local Ativo</span>
+                </div>
+
+                <!-- Fast Run Button -->
+                <button onclick="App.navigateTo('execution')" 
+                    class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 shadow-md shadow-indigo-600/20 transition">
+                    <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                    <span>Executar Testes</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Containers -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- 1. Dashboard Page -->
+            <div id="page-dashboard" class="page-section active"></div>
+
+            <!-- 2. Projects Page -->
+            <div id="page-projects" class="page-section hidden"></div>
+
+            <!-- 3. Execution Page -->
+            <div id="page-execution" class="page-section hidden"></div>
+
+            <!-- 4. History Page -->
+            <div id="page-history" class="page-section hidden"></div>
+
+            <!-- 5. Schedules Page -->
+            <div id="page-schedules" class="page-section hidden"></div>
+
+            <!-- 6. Settings Page -->
+            <div id="page-settings" class="page-section hidden"></div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL OVERLAY                              -->
+    <!-- ========================================== -->
+    <div id="modal-backdrop" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div id="modal-box" class="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+                <h3 id="modal-title" class="text-base font-bold text-gray-100">Título do Modal</h3>
+                <button id="modal-close-btn" type="button" class="text-gray-400 hover:text-gray-200 p-1 rounded-lg hover:bg-gray-800 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div id="modal-content" class="p-5 overflow-y-auto flex-1 text-sm text-gray-300">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Modal Actions Footer -->
+            <div id="modal-actions" class="p-4 border-t border-gray-800 bg-gray-950/60 flex items-center justify-end gap-2">
+                <!-- Dynamically populated buttons -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TOAST CONTAINER                            -->
+    <!-- ========================================== -->
+    <div id="toast-container"></div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT MODULES                         -->
+    <!-- ========================================== -->
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/projects.js"></script>
+    <script src="/static/js/execution.js"></script>
+    <script src="/static/js/history.js"></script>
+    <script src="/static/js/schedules.js"></script>
+    <script src="/static/js/settings.js"></script>
+</body>
+</html>
